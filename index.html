@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="FinTrack"/>
+  <meta name="theme-color" content="#0a0a0f"/>
+  <title>FinTrack Pro</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;background:#0a0a0f;font-family:'Sarabun',sans-serif}
+    ::-webkit-scrollbar{display:none}
+    #root{max-width:430px;margin:0 auto;min-height:100vh;background:#0a0a0f;position:relative}
+    input,select,textarea{font-family:'Sarabun',sans-serif}
+    .card{background:#13131f;border-radius:20px;padding:20px;border:1px solid #1e1e2e}
+    .pill-btn{background:#1e1e2e;border:none;border-radius:50px;padding:8px 18px;color:#a0a0c0;font-family:'Sarabun',sans-serif;font-size:14px;cursor:pointer;transition:all .2s}
+    .pill-btn.active{background:#7c6ef2;color:#fff}
+    .fab{position:fixed;bottom:88px;right:50%;margin-right:-191px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7c6ef2,#a78bfa);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px #7c6ef255;z-index:50;font-size:28px;color:#fff;line-height:1}
+    @media(max-width:430px){.fab{right:24px;margin-right:0}}
+    .modal-overlay{position:fixed;inset:0;background:#000000cc;backdrop-filter:blur(8px);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+    .modal-sheet{background:#13131f;border-radius:28px 28px 0 0;width:100%;max-width:430px;padding:24px 24px 48px;border-top:1px solid #2a2a3e;max-height:92vh;overflow-y:auto}
+    .field-label{color:#6060a0;font-size:13px;font-weight:600;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+    .input-field{background:#0a0a0f;border:1.5px solid #2a2a3e;border-radius:14px;padding:14px 16px;color:#e0e0ff;font-size:16px;width:100%;outline:none;transition:border-color .2s}
+    .input-field:focus{border-color:#7c6ef2}
+    .btn-primary{background:linear-gradient(135deg,#7c6ef2,#a78bfa);border:none;border-radius:14px;padding:16px;color:#fff;font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;width:100%;cursor:pointer}
+    .tx-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #1a1a2e}
+    .tx-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .nav-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#0d0d18;border-top:1px solid #1a1a2e;display:flex;z-index:90;padding-bottom:env(safe-area-inset-bottom,0px)}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:12px 0;color:#404060;font-family:'Sarabun',sans-serif;font-size:11px}
+    .nav-item.active{color:#7c6ef2}
+    .product-chip{background:#1a1a2e;border:1.5px solid #2a2a3e;border-radius:16px;padding:14px;cursor:pointer;text-align:center}
+    .sub-card{background:#0f0f1a;border-radius:16px;padding:16px;border:1px solid #1e1e2e;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+    .badge{border-radius:50px;padding:3px 10px;font-size:12px;font-weight:700}
+    .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1e1e2e;color:#a78bfa;border-radius:50px;padding:10px 24px;font-size:14px;z-index:999;border:1px solid #3a3a5a;white-space:nowrap;animation:fadeInUp .3s ease}
+    @keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+    .segment-tab{flex:1;padding:8px;border:none;border-radius:10px;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;transition:all .2s}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mono{font-family:'Space Mono',monospace}
+    .emoji-btn{background:#1a1a2e;border:2px solid transparent;border-radius:12px;padding:6px 10px;cursor:pointer;font-size:20px}
+    .emoji-btn.active{background:#2a1a4a;border-color:#7c6ef2}
+    .install-banner{background:linear-gradient(135deg,#1a1030,#0f1a30);border:1px solid #3a2a5a;border-radius:16px;padding:16px;margin:16px 24px 0;display:flex;align-items:center;gap:12px}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const{useState,useEffect,useCallback,useRef}=React;
+const STORAGE_KEY="fintrack_data_v1";
+const defaultData={transactions:[],products:[],subscriptions:[]};
+function loadData(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)return JSON.parse(r);}catch{}return defaultData;}
+function saveData(d){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}catch{}}
+const formatTHB=n=>new Intl.NumberFormat("th-TH",{style:"currency",currency:"THB",maximumFractionDigits:0}).format(n);
+const thaiMonths=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+const fmtDate=iso=>{const d=new Date(iso);return`${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear()+543}`;};
+const todayStr=()=>new Date().toISOString().split("T")[0];
+const catEmojis={อาหาร:"🍜",เที่ยว:"🎉",ขนม:"🍭",เครื่องดื่ม:"🧃",เสื้อผ้า:"👕",เกม:"🎮",หนังสือ:"📚",สุขภาพ:"💊",ค่าเดินทาง:"🚌",อื่นๆ:"📦",รายรับ:"💰",สมัครสมาชิก:"📱"};
+const ICONS={
+  plus:`<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>`,
+  chart:`<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>`,
+  tag:`<path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>`,
+  repeat:`<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/>`,
+  home:`<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>`,
+  trash:`<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>`,
+  close:`<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`,
+  calendar:`<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>`,
+};
+const Ic=({n,s=20,c="currentColor"})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" dangerouslySetInnerHTML={{__html:ICONS[n]}}/>;
+
+function App(){
+  const[data,setData]=useState(null);
+  const[tab,setTab]=useState("home");
+  const[modal,setModal]=useState(null);
+  const[toast,setToast]=useState(null);
+  const[selDate,setSelDate]=useState(todayStr());
+  const[showInstall,setShowInstall]=useState(false);
+  const deferredPrompt=useRef(null);
+
+  useEffect(()=>{
+    setData(loadData());
+    window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt.current=e;setShowInstall(true);});
+    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isStandalone=window.navigator.standalone===true;
+    if(isIOS&&!isStandalone)setShowInstall(true);
+  },[]);
+
+  useEffect(()=>{
+    if(!data)return;
+    const now=new Date();const today=todayStr();let changed=false;
+    const newTx=[...data.transactions];
+    const updatedSubs=data.subscriptions.map(sub=>{
+      if(!sub.active)return sub;
+      const last=sub.lastCharged?new Date(sub.lastCharged):null;
+      let should=!last;
+      if(last){const diff=(now-last)/(1000*60*60*24);if(sub.cycle==="weekly"&&diff>=7)should=true;if(sub.cycle==="monthly"&&diff>=28)should=true;if(sub.cycle==="yearly"&&diff>=365)should=true;}
+      if(should){newTx.push({id:Date.now()+Math.random(),type:"expense",amount:sub.price,category:"สมัครสมาชิก",note:sub.name,date:today});changed=true;return{...sub,lastCharged:today};}
+      return sub;
+    });
+    if(changed){const nd={...data,transactions:newTx,subscriptions:updatedSubs};setData(nd);saveData(nd);}
+  },[data?.subscriptions?.length]);
+
+  const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(null),2200);};
+  const mutate=useCallback(fn=>setData(prev=>{const n=fn(prev);saveData(n);return n;}),[]);
+
+  if(!data)return<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",color:"#7c6ef2",fontSize:18}}>กำลังโหลด...</div>;
+
+  const allTx=[...data.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const income=allTx.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
+  const expense=allTx.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
+  const balance=income-expense;
+
+  return(
+    <div id="app" style={{paddingBottom:90}}>
+      <div style={{padding:"56px 24px 0",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div><div style={{color:"#6060a0",fontSize:13,fontWeight:600,letterSpacing:1,textTransform:"uppercase"}}>ยินดีต้อนรับ 👋</div><div style={{color:"#e0e0ff",fontSize:24,fontWeight:700,marginTop:4}}>FinTrack Pro</div></div>
+        <div style={{background:"#1e1e2e",borderRadius:14,padding:"8px 14px",display:"flex",gap:8,alignItems:"center"}}><Ic n="calendar" s={16} c="#7c6ef2"/><input type="date" value={selDate} onChange={e=>setSelDate(e.target.value)} style={{background:"none",border:"none",color:"#a0a0d0",fontSize:13,outline:"none"}}/></div>
+      </div>
+
+      <div style={{margin:"20px 24px 0",padding:"28px 24px",background:"linear-gradient(135deg,#1a1030,#0f1a30)",borderRadius:24,border:"1px solid #2a1a4a",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-30,right:-30,width:120,height:120,background:"#7c6ef220",borderRadius:"50%"}}/>
+        <div style={{color:"#8080b0",fontSize:13,fontWeight:600,letterSpacing:1,textTransform:"uppercase"}}>ยอดคงเหลือรวม</div>
+        <div className="mono" style={{color:balance>=0?"#a78bfa":"#f87171",fontSize:36,fontWeight:700,marginTop:8}}>{formatTHB(balance)}</div>
+        <div style={{display:"flex",gap:24,marginTop:20}}>
+          <div><div style={{color:"#6060a0",fontSize:12}}>รายรับรวม</div><div className="mono" style={{color:"#4ade80",fontSize:18,fontWeight:700}}>{formatTHB(income)}</div></div>
+          <div style={{width:1,background:"#2a2a4a"}}/>
+          <div><div style={{color:"#6060a0",fontSize:12}}>รายจ่ายรวม</div><div className="mono" style={{color:"#f87171",fontSize:18,fontWeight:700}}>{formatTHB(expense)}</div></div>
+          {income>0&&<><div style={{width:1,background:"#2a2a4a"}}/><div><div style={{color:"#6060a0",fontSize:12}}>ออม</div><div className="mono" style={{color:"#60a0ff",fontSize:18,fontWeight:700}}>{Math.round((1-expense/income)*100)}%</div></div></>}
+        </div>
+      </div>
+
+      {showInstall&&(
+        <div className="install-banner">
+          <div style={{fontSize:32}}>📲</div>
+          <div style={{flex:1}}><div style={{color:"#e0e0ff",fontWeight:700,fontSize:14}}>ติดตั้งบน iPhone</div><div style={{color:"#8080b0",fontSize:12,marginTop:2}}>กด Share 󰕙 → "Add to Home Screen"</div></div>
+          <button onClick={()=>setShowInstall(false)} style={{background:"none",border:"none",color:"#606080",cursor:"pointer",fontSize:20,lineHeight:1}}>✕</button>
+        </div>
+      )}
+
+      {tab==="home"&&<HomeTab allTx={allTx} formatTHB={formatTHB} fmtDate={fmtDate} catEmojis={catEmojis} mutate={mutate} showToast={showToast}/>}
+      {tab==="products"&&<ProductsTab data={data} mutate={mutate} showToast={showToast} formatTHB={formatTHB} selDate={selDate}/>}
+      {tab==="subs"&&<SubsTab data={data} mutate={mutate} showToast={showToast} formatTHB={formatTHB}/>}
+      {tab==="report"&&<ReportTab allTx={allTx} formatTHB={formatTHB} thaiMonths={thaiMonths} catEmojis={catEmojis}/>}
+
+      {(tab==="home"||tab==="products"||tab==="subs")&&(
+        <button className="fab" onClick={()=>setModal(tab==="home"?"add_tx":tab==="products"?"add_product":"add_sub")}>＋</button>
+      )}
+
+      <nav className="nav-bar">
+        {[{id:"home",ic:"home",lb:"หน้าหลัก"},{id:"products",ic:"tag",lb:"สินค้า"},{id:"subs",ic:"repeat",lb:"สมาชิก"},{id:"report",ic:"chart",lb:"รายงาน"}].map(n=>(
+          <button key={n.id} className={"nav-item"+(tab===n.id?" active":"")} onClick={()=>setTab(n.id)}>
+            <Ic n={n.ic} s={22}/><span>{n.lb}</span>
+          </button>
+        ))}
+      </nav>
+
+      {modal==="add_tx"&&<AddTxModal onClose={()=>setModal(null)} mutate={mutate} showToast={showToast} catEmojis={catEmojis} selDate={selDate}/>}
+      {modal==="add_product"&&<AddProductModal onClose={()=>setModal(null)} mutate={mutate} showToast={showToast} catEmojis={catEmojis}/>}
+      {modal==="add_sub"&&<AddSubModal onClose={()=>setModal(null)} mutate={mutate} showToast={showToast}/>}
+      {toast&&<div className="toast">{toast}</div>}
+    </div>
+  );
+}
+
+function HomeTab({allTx,formatTHB,fmtDate,catEmojis,mutate,showToast}){
+  const[filter,setFilter]=useState("all");
+  const filtered=allTx.filter(t=>filter==="all"||t.type===filter);
+  const remove=id=>{mutate(p=>({...p,transactions:p.transactions.filter(t=>t.id!==id)}));showToast("ลบรายการแล้ว");};
+  return(
+    <div style={{padding:"20px 24px 0"}}>
+      <div style={{display:"flex",gap:8,marginBottom:16}}>
+        {["all","income","expense"].map(f=><button key={f} className={"pill-btn"+(filter===f?" active":"")} onClick={()=>setFilter(f)}>{f==="all"?"ทั้งหมด":f==="income"?"💚 รายรับ":"🔴 รายจ่าย"}</button>)}
+      </div>
+      <div style={{color:"#6060a0",fontSize:13,fontWeight:600,marginBottom:12,textTransform:"uppercase",letterSpacing:.5}}>รายการทั้งหมด {filtered.length>0&&`(${filtered.length})`}</div>
+      {filtered.length===0
+        ?<div style={{textAlign:"center",color:"#404060",padding:"48px 0"}}><div style={{fontSize:48,marginBottom:12}}>📊</div><div>กดปุ่ม + เพื่อเพิ่มรายการ</div></div>
+        :filtered.map(t=>(
+          <div key={t.id} className="tx-row">
+            <div className="tx-icon" style={{background:t.type==="income"?"#0d2a1a":"#2a0d0d"}}>{catEmojis[t.category]||"💸"}</div>
+            <div style={{flex:1}}><div style={{color:"#e0e0ff",fontWeight:600,fontSize:15}}>{t.note||t.category}</div><div style={{color:"#505080",fontSize:12,marginTop:2}}>{fmtDate(t.date)} · {t.category}</div></div>
+            <div style={{textAlign:"right"}}>
+              <div className="mono" style={{color:t.type==="income"?"#4ade80":"#f87171",fontWeight:700,fontSize:16}}>{t.type==="income"?"+":"-"}{formatTHB(t.amount)}</div>
+              <button onClick={()=>remove(t.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#404060",marginTop:4}}><Ic n="trash" s={14}/></button>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  );
+}
+
+function ProductsTab({data,mutate,showToast,formatTHB,selDate}){
+  const[cat,setCat]=useState("ทั้งหมด");
+  const cats=["ทั้งหมด",...new Set(data.products.map(p=>p.category))];
+  const filtered=cat==="ทั้งหมด"?data.products:data.products.filter(p=>p.category===cat);
+  const quickAdd=p=>{mutate(prev=>({...prev,transactions:[...prev.transactions,{id:Date.now(),type:"expense",amount:p.price,category:p.category,note:p.name,date:selDate}]}));showToast(`เพิ่ม ${p.name} 🛒`);};
+  const remove=id=>{mutate(p=>({...p,products:p.products.filter(x=>x.id!==id)}));showToast("ลบสินค้าแล้ว");};
+  return(
+    <div style={{padding:"20px 24px 0"}}>
+      <div style={{color:"#a0a0c0",fontSize:14,marginBottom:12}}><span style={{color:"#7c6ef2",fontWeight:700}}>กดที่สินค้า</span> เพื่อบันทึกรายจ่ายทันที</div>
+      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,marginBottom:16}}>
+        {cats.map(c=><button key={c} className={"pill-btn"+(cat===c?" active":"")} style={{whiteSpace:"nowrap"}} onClick={()=>setCat(c)}>{c}</button>)}
+      </div>
+      {filtered.length===0
+        ?<div style={{textAlign:"center",color:"#404060",padding:"48px 0"}}><div style={{fontSize:48,marginBottom:12}}>🏷️</div><div>กดปุ่ม + เพื่อเพิ่มสินค้า</div></div>
+        :<div className="grid2">{filtered.map(p=>(
+          <div key={p.id} className="product-chip" onClick={()=>quickAdd(p)}>
+            <div style={{fontSize:28,marginBottom:6}}>{p.emoji||"📦"}</div>
+            <div style={{color:"#e0e0ff",fontWeight:600,fontSize:14}}>{p.name}</div>
+            <div className="mono" style={{color:"#7c6ef2",fontWeight:700,fontSize:16,marginTop:4}}>{formatTHB(p.price)}</div>
+            <div style={{color:"#505080",fontSize:11,marginTop:2}}>{p.category}</div>
+            <button onClick={e=>{e.stopPropagation();remove(p.id);}} style={{marginTop:8,background:"none",border:"none",cursor:"pointer",color:"#404060"}}><Ic n="trash" s={13}/></button>
+          </div>
+        ))}</div>
+      }
+    </div>
+  );
+}
+
+function SubsTab({data,mutate,showToast,formatTHB}){
+  const cycleLabel={weekly:"รายสัปดาห์",monthly:"รายเดือน",yearly:"รายปี"};
+  const cycleColor={weekly:"#fbbf24",monthly:"#7c6ef2",yearly:"#4ade80"};
+  const monthly=data.subscriptions.filter(s=>s.active).reduce((sum,s)=>{if(s.cycle==="weekly")return sum+s.price*4;if(s.cycle==="yearly")return sum+s.price/12;return sum+s.price;},0);
+  const toggle=id=>mutate(p=>({...p,subscriptions:p.subscriptions.map(s=>s.id===id?{...s,active:!s.active}:s)}));
+  const remove=id=>{mutate(p=>({...p,subscriptions:p.subscriptions.filter(s=>s.id!==id)}));showToast("ลบการสมัครแล้ว");};
+  return(
+    <div style={{padding:"20px 24px 0"}}>
+      <div className="card" style={{marginBottom:20,background:"linear-gradient(135deg,#1a1a0a,#0f1a10)"}}>
+        <div style={{color:"#8080b0",fontSize:13}}>ค่าสมาชิกรวม/เดือน</div>
+        <div className="mono" style={{color:"#4ade80",fontSize:30,fontWeight:700,marginTop:4}}>{formatTHB(monthly)}</div>
+        <div style={{color:"#6060a0",fontSize:12,marginTop:4}}>จาก {data.subscriptions.filter(s=>s.active).length} แอปที่เปิดใช้</div>
+      </div>
+      {data.subscriptions.length===0
+        ?<div style={{textAlign:"center",color:"#404060",padding:"48px 0"}}><div style={{fontSize:48,marginBottom:12}}>📱</div><div>กดปุ่ม + เพื่อเพิ่มสมาชิก</div></div>
+        :data.subscriptions.map(sub=>(
+          <div key={sub.id} className="sub-card">
+            <div style={{display:"flex",alignItems:"center",gap:14}}>
+              <div style={{width:46,height:46,borderRadius:14,background:"#1e1e3e",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{sub.emoji||"📱"}</div>
+              <div>
+                <div style={{color:"#e0e0ff",fontWeight:600}}>{sub.name}</div>
+                <div style={{display:"flex",gap:6,marginTop:4}}>
+                  <span className="badge" style={{background:cycleColor[sub.cycle]+"22",color:cycleColor[sub.cycle]}}>{cycleLabel[sub.cycle]}</span>
+                  <span className="mono" style={{color:"#7c6ef2",fontWeight:700,fontSize:14}}>{formatTHB(sub.price)}</span>
+                </div>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:10,alignItems:"center"}}>
+              <button onClick={()=>toggle(sub.id)} style={{background:sub.active?"#1a2a1a":"#2a1a1a",border:`1.5px solid ${sub.active?"#4ade80":"#505080"}`,borderRadius:50,padding:"5px 12px",cursor:"pointer",color:sub.active?"#4ade80":"#606080",fontSize:12,fontWeight:600}}>{sub.active?"เปิด":"ปิด"}</button>
+              <button onClick={()=>remove(sub.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#505070"}}><Ic n="trash" s={16}/></button>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  );
+}
+
+function ReportTab({allTx,formatTHB,thaiMonths,catEmojis}){
+  const[mode,setMode]=useState("month");
+  const now=new Date();
+  const getTx=()=>{
+    if(mode==="day")return allTx.filter(t=>t.date===todayStr());
+    if(mode==="month")return allTx.filter(t=>{const d=new Date(t.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+    return allTx.filter(t=>new Date(t.date).getFullYear()===now.getFullYear());
+  };
+  const tx=getTx();
+  const income=tx.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
+  const expense=tx.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
+  const savingRate=income>0?Math.round((1-expense/income)*100):0;
+  const catBreak={};tx.filter(t=>t.type==="expense").forEach(t=>{catBreak[t.category]=(catBreak[t.category]||0)+t.amount;});
+  const sortedCats=Object.entries(catBreak).sort((a,b)=>b[1]-a[1]);
+  const monthlyData=Array.from({length:6},(_,i)=>{
+    const d=new Date(now.getFullYear(),now.getMonth()-(5-i),1);
+    const mtx=allTx.filter(t=>{const td=new Date(t.date);return td.getMonth()===d.getMonth()&&td.getFullYear()===d.getFullYear();});
+    return{label:thaiMonths[d.getMonth()],income:mtx.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0),expense:mtx.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0)};
+  });
+  const maxVal=Math.max(...monthlyData.flatMap(m=>[m.income,m.expense]),1);
+  const modeLabel={day:"วันนี้",month:`${thaiMonths[now.getMonth()]} ${now.getFullYear()+543}`,year:`ปี ${now.getFullYear()+543}`};
+  return(
+    <div style={{padding:"20px 24px 0"}}>
+      <div style={{display:"flex",background:"#1a1a2e",borderRadius:14,padding:4,gap:4,marginBottom:20}}>
+        {["day","month","year"].map(m=><button key={m} className="segment-tab" onClick={()=>setMode(m)} style={{background:mode===m?"#7c6ef2":"transparent",color:mode===m?"#fff":"#6060a0"}}>{m==="day"?"วัน":m==="month"?"เดือน":"ปี"}</button>)}
+      </div>
+      <div style={{color:"#a0a0d0",fontSize:15,fontWeight:600,marginBottom:16}}>{modeLabel[mode]}</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:20}}>
+        {[{lb:"รายรับ",val:formatTHB(income),c:"#4ade80"},{lb:"รายจ่าย",val:formatTHB(expense),c:"#f87171"},{lb:"ออม",val:`${savingRate}%`,c:"#60a0ff"}].map(k=>(
+          <div key={k.lb} className="card" style={{padding:"14px 12px",textAlign:"center"}}>
+            <div style={{color:"#505080",fontSize:11,fontWeight:600,textTransform:"uppercase",marginBottom:4}}>{k.lb}</div>
+            <div className="mono" style={{color:k.c,fontWeight:700,fontSize:14}}>{k.val}</div>
+          </div>
+        ))}
+      </div>
+      {mode!=="day"&&(
+        <div className="card" style={{marginBottom:20}}>
+          <div style={{color:"#a0a0d0",fontWeight:700,marginBottom:16}}>แนวโน้ม 6 เดือน</div>
+          <div style={{display:"flex",gap:8,alignItems:"flex-end",justifyContent:"space-around"}}>
+            {monthlyData.map((m,i)=>(
+              <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                <div style={{display:"flex",gap:2,alignItems:"flex-end",height:80}}>
+                  <div style={{width:"45%",height:Math.max(4,m.income/maxVal*80),background:"#4ade8060",borderRadius:"4px 4px 0 0"}}/>
+                  <div style={{width:"45%",height:Math.max(4,m.expense/maxVal*80),background:"#f8717160",borderRadius:"4px 4px 0 0"}}/>
+                </div>
+                <div style={{color:"#404060",fontSize:10}}>{m.label}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:16,marginTop:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:10,height:10,borderRadius:2,background:"#4ade80"}}/><span style={{color:"#606080",fontSize:12}}>รายรับ</span></div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:10,height:10,borderRadius:2,background:"#f87171"}}/><span style={{color:"#606080",fontSize:12}}>รายจ่าย</span></div>
+          </div>
+        </div>
+      )}
+      {sortedCats.length>0&&(
+        <div className="card">
+          <div style={{color:"#a0a0d0",fontWeight:700,marginBottom:16}}>% การใช้จ่ายตามหมวด</div>
+          {sortedCats.map(([cat,amt])=>(
+            <div key={cat} style={{marginBottom:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+                <span style={{color:"#c0c0e0",fontSize:14}}>{catEmojis[cat]||"📦"} {cat}</span>
+                <span className="mono" style={{color:"#a0a0c0",fontSize:12}}>{formatTHB(amt)} ({expense>0?Math.round(amt/expense*100):0}%)</span>
+              </div>
+              <div style={{height:6,background:"#1a1a2e",borderRadius:99}}>
+                <div style={{height:"100%",borderRadius:99,background:"linear-gradient(90deg,#7c6ef2,#a78bfa)",width:`${expense>0?(amt/expense*100):0}%`}}/>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {tx.length===0&&<div style={{textAlign:"center",color:"#404060",padding:"48px 0"}}><div style={{fontSize:48,marginBottom:12}}>📈</div><div>ยังไม่มีข้อมูลในช่วงนี้</div></div>}
+    </div>
+  );
+}
+
+function AddTxModal({onClose,mutate,showToast,catEmojis,selDate}){
+  const[type,setType]=useState("expense");const[amount,setAmount]=useState("");const[category,setCategory]=useState("อื่นๆ");const[note,setNote]=useState("");const[date,setDate]=useState(selDate);
+  const cats=Object.keys(catEmojis).filter(c=>c!=="รายรับ"&&c!=="สมัครสมาชิก");
+  const submit=()=>{if(!amount||isNaN(amount)||Number(amount)<=0){showToast("กรุณาใส่จำนวนเงิน");return;}mutate(prev=>({...prev,transactions:[...prev.transactions,{id:Date.now(),type,amount:Number(amount),category:type==="income"?"รายรับ":category,note,date}]}));showToast(type==="income"?"เพิ่มรายรับแล้ว 💚":"เพิ่มรายจ่ายแล้ว");onClose();};
+  return(
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal-sheet">
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><div style={{color:"#e0e0ff",fontSize:20,fontWeight:700}}>เพิ่มรายการ</div><button onClick={onClose} style={{background:"#1e1e2e",border:"none",borderRadius:50,width:32,height:32,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ic n="close" s={16} c="#a0a0c0"/></button></div>
+        <div style={{display:"flex",background:"#0a0a0f",borderRadius:14,padding:4,gap:4,marginBottom:20}}>
+          {["expense","income"].map(t=><button key={t} className="segment-tab" onClick={()=>setType(t)} style={{background:type===t?(t==="income"?"#14532d":"#450a0a"):"transparent",color:type===t?(t==="income"?"#4ade80":"#f87171"):"#606080"}}>{t==="income"?"💚 รายรับ":"🔴 รายจ่าย"}</button>)}
+        </div>
+        <div style={{marginBottom:16}}><div className="field-label">จำนวนเงิน (บาท)</div><input className="input-field mono" type="number" placeholder="0" value={amount} onChange={e=>setAmount(e.target.value)} inputMode="decimal" style={{fontSize:24}}/></div>
+        {type==="expense"&&<div style={{marginBottom:16}}><div className="field-label">หมวดหมู่</div><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{cats.map(c=><button key={c} className={"pill-btn"+(category===c?" active":"")} onClick={()=>setCategory(c)}>{catEmojis[c]} {c}</button>)}</div></div>}
+        <div style={{marginBottom:16}}><div className="field-label">หมายเหตุ</div><input className="input-field" placeholder="เช่น กินข้าวกลางวัน..." value={note} onChange={e=>setNote(e.target.value)}/></div>
+        <div style={{marginBottom:24}}><div className="field-label">วันที่</div><input className="input-field" type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
+        <button className="btn-primary" onClick={submit}>บันทึกรายการ</button>
+      </div>
+    </div>
+  );
+}
+
+function AddProductModal({onClose,mutate,showToast,catEmojis}){
+  const[name,setName]=useState("");const[price,setPrice]=useState("");const[category,setCategory]=useState("อื่นๆ");const[emoji,setEmoji]=useState("📦");
+  const cats=Object.keys(catEmojis).filter(c=>c!=="รายรับ"&&c!=="สมัครสมาชิก");
+  const emojis=["🍜","🍭","🧃","🎮","👕","📚","💊","🚌","📦","☕","🍕","🎵","🎬","🛒","✏️"];
+  const submit=()=>{if(!name||!price||isNaN(price)||Number(price)<=0){showToast("กรุณากรอกข้อมูลให้ครบ");return;}mutate(p=>({...p,products:[...p.products,{id:Date.now(),name,price:Number(price),category,emoji}]}));showToast(`เพิ่ม ${name} 🏷️`);onClose();};
+  return(
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal-sheet">
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><div style={{color:"#e0e0ff",fontSize:20,fontWeight:700}}>เพิ่มสินค้า/บริการ</div><button onClick={onClose} style={{background:"#1e1e2e",border:"none",borderRadius:50,width:32,height:32,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ic n="close" s={16} c="#a0a0c0"/></button></div>
+        <div style={{marginBottom:16}}><div className="field-label">ไอคอน</div><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{emojis.map(e=><button key={e} className={"emoji-btn"+(emoji===e?" active":"")} onClick={()=>setEmoji(e)}>{e}</button>)}</div></div>
+        <div style={{marginBottom:16}}><div className="field-label">ชื่อสินค้า</div><input className="input-field" placeholder="เช่น กาแฟ, ข้าวมันไก่..." value={name} onChange={e=>setName(e.target.value)}/></div>
+        <div style={{marginBottom:16}}><div className="field-label">ราคา (บาท)</div><input className="input-field" type="number" placeholder="0" value={price} onChange={e=>setPrice(e.target.value)} inputMode="decimal"/></div>
+        <div style={{marginBottom:24}}><div className="field-label">หมวดหมู่</div><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{cats.map(c=><button key={c} className={"pill-btn"+(category===c?" active":"")} onClick={()=>setCategory(c)}>{catEmojis[c]} {c}</button>)}</div></div>
+        <button className="btn-primary" onClick={submit}>บันทึกสินค้า</button>
+      </div>
+    </div>
+  );
+}
+
+function AddSubModal({onClose,mutate,showToast}){
+  const[name,setName]=useState("");const[price,setPrice]=useState("");const[cycle,setCycle]=useState("monthly");const[emoji,setEmoji]=useState("📱");
+  const appEmojis=["📱","🎵","🎬","🎮","📰","☁️","🛡️","📊","🤖","💬"];
+  const submit=()=>{if(!name||!price||isNaN(price)||Number(price)<=0){showToast("กรุณากรอกข้อมูลให้ครบ");return;}mutate(p=>({...p,subscriptions:[...p.subscriptions,{id:Date.now(),name,price:Number(price),cycle,emoji,active:true,lastCharged:null}]}));showToast(`เพิ่ม ${name} 📱`);onClose();};
+  return(
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal-sheet">
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><div style={{color:"#e0e0ff",fontSize:20,fontWeight:700}}>เพิ่มสมาชิก</div><button onClick={onClose} style={{background:"#1e1e2e",border:"none",borderRadius:50,width:32,height:32,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ic n="close" s={16} c="#a0a0c0"/></button></div>
+        <div style={{marginBottom:16}}><div className="field-label">ไอคอน</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{appEmojis.map(e=><button key={e} className={"emoji-btn"+(emoji===e?" active":"")} onClick={()=>setEmoji(e)}>{e}</button>)}</div></div>
+        <div style={{marginBottom:16}}><div className="field-label">ชื่อแอป/บริการ</div><input className="input-field" placeholder="เช่น Spotify, Netflix..." value={name} onChange={e=>setName(e.target.value)}/></div>
+        <div style={{marginBottom:16}}><div className="field-label">ค่าบริการ (บาท)</div><input className="input-field" type="number" placeholder="0" value={price} onChange={e=>setPrice(e.target.value)} inputMode="decimal"/></div>
+        <div style={{marginBottom:24}}><div className="field-label">รอบเรียกเก็บ</div><div style={{display:"flex",gap:10}}>{[{v:"weekly",l:"รายสัปดาห์"},{v:"monthly",l:"รายเดือน"},{v:"yearly",l:"รายปี"}].map(c=><button key={c.v} className={"pill-btn"+(cycle===c.v?" active":"")} style={{flex:1}} onClick={()=>setCycle(c.v)}>{c.l}</button>)}</div></div>
+        <button className="btn-primary" onClick={submit}>บันทึกการสมัคร</button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}
+</script>
+</body>
+</html>
